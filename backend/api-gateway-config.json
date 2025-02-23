@@ -1,0 +1,8 @@
+{
+    "name": "device-management-api",
+    "description": "API for Device Management System",
+    "endpointConfiguration": {
+        "types": ["REGIONAL"]
+    },
+    "version": "1.0.0"
+} 

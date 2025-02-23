@@ -1,0 +1,18 @@
+﻿{
+    "allowMethods":  [
+                         "GET",
+                         "POST",
+                         "PUT",
+                         "DELETE",
+                         "OPTIONS"
+                     ],
+    "maxAge":  300,
+    "allowHeaders":  [
+                         "Content-Type",
+                         "X-Amz-Date",
+                         "Authorization",
+                         "X-Api-Key",
+                         "X-Amz-Security-Token"
+                     ],
+    "allowOrigin":  "*"
+}
