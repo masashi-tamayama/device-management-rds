@@ -21,14 +21,14 @@ class RDSInterface(DatabaseInterface):
         """データベース接続の初期化"""
         try:
             self.connection = mysql.connector.connect(
-                host=os.getenv('RDS_HOST'),
-                user=os.getenv('RDS_USER'),
-                password=os.getenv('RDS_PASSWORD'),
-                database=os.getenv('RDS_DATABASE'),
-                port=int(os.getenv('RDS_PORT', '3306'))
+                host=os.getenv('DB_HOST'),
+                user=os.getenv('DB_USER'),
+                password=os.getenv('DB_PASSWORD'),
+                database=os.getenv('DB_NAME'),
+                port=int(os.getenv('DB_PORT', '3306'))
             )
             self.connection.autocommit = True
-            logger.info(f"RDSデータベース {os.getenv('RDS_DATABASE')} に接続しました")
+            logger.info(f"RDSデータベース {os.getenv('DB_NAME')} に接続しました")
         except mysql.connector.Error as e:
             logger.error(f"データベース接続エラー: {str(e)}")
             raise
