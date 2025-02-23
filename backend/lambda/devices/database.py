@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # データベース接続情報
-DB_TYPE = os.getenv("DB_TYPE", "rds")
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "3306")
 DB_USER = os.getenv("DB_USER", "root")

@@ -37,16 +37,8 @@ class DatabaseInterface(ABC):
 
 def get_db_interface() -> DatabaseInterface:
     """
-    環境変数に基づいて適切なデータベースインターフェースを返す
-    DB_TYPE環境変数が 'dynamodb' の場合はDynamoDB、それ以外の場合はRDSを使用
+    RDSインターフェースを返す
     """
-    db_type = os.getenv('DB_TYPE', 'rds').lower()
-    
-    if db_type == 'dynamodb':
-        from .dynamodb import DynamoDBInterface
-        logger.info("Using DynamoDB interface")
-        return DynamoDBInterface()
-    else:
-        from .rds import RDSInterface
-        logger.info("Using RDS interface")
-        return RDSInterface() 
+    from .rds import RDSInterface
+    logger.info("Using RDS interface")
+    return RDSInterface() 

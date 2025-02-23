@@ -66,7 +66,7 @@ def insert_test_data():
     try:
         # データベースインターフェースの取得
         db = get_db_interface()
-        logger.info(f"データベースに接続しました（タイプ: {os.getenv('DB_TYPE', 'dynamodb')}）")
+        logger.info("RDSデータベースに接続しました")
 
         # 既存のデータを確認
         existing_devices = db.list_devices()
