@@ -85,7 +85,7 @@ def create_device(device: DeviceCreate, db: Session = Depends(get_db)):
 def list_devices(db: Session = Depends(get_db)):
     """全デバイスを取得"""
     try:
-        devices = db.query(Device).all()
+        devices = db.query(Device).order_by(Device.created_at.desc()).all()
         return UnicodeJSONResponse(
             content=[{
                 "name": device.name,
