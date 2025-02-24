@@ -1,20 +1,15 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { DeviceList } from './components/DeviceList/DeviceList';
-import { DeviceForm } from './components/DeviceForm/DeviceForm';
-import './App.css';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { RouterProvider } from 'react-router-dom';
+import { theme } from './theme';
+import { router } from './routes';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Navigate to="/devices" replace />} />
-          <Route path="/devices" element={<DeviceList />} />
-          <Route path="/devices/create" element={<DeviceForm />} />
-          <Route path="/devices/edit/:id" element={<DeviceForm />} />
-        </Routes>
-      </div>
-    </Router>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <RouterProvider router={router} />
+    </ThemeProvider>
   );
 }
 
