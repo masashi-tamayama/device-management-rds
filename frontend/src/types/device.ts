@@ -6,7 +6,7 @@ export interface Device {
     updated_at: string;
 }
 
-export interface DeviceCreateInput {
+export interface DeviceCreate {
     name: string;
     manufacturer: string;
 }
