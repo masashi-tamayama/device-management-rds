@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, Stack, Alert, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Table } from '../../components/common/Table';
 import { Device } from '../../types/device';
 import apiClient from '../../api/client';
 import { Column } from '../../components/common/Table/types';
+import { Dialog } from '../../components/common/Dialog';
 
 export const DeviceList = () => {
   const navigate = useNavigate();
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Device | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const fetchDevices = async () => {
     setLoading(true);
@@ -30,24 +34,54 @@ export const DeviceList = () => {
     fetchDevices();
   }, []);
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    
+    setDeleteLoading(true);
+    try {
+      await apiClient.delete(`/api/v1/devices/${deleteTarget.id}`);
+      await fetchDevices();
+      setDeleteTarget(null);
+      setSuccessMessage(`${deleteTarget.name}を削除しました`);
+    } catch (err) {
+      console.error('Error deleting device:', err);
+      setError('デバイスの削除に失敗しました');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const columns: Column<Device>[] = [
     { field: 'name' as keyof Device, headerName: '機器名', width: 200 },
     { field: 'manufacturer' as keyof Device, headerName: 'メーカー', width: 200 },
     {
       field: 'actions' as keyof Device,
       headerName: '操作',
-      width: 120,
+      width: 200,
       renderCell: (row: Device) => (
-        <Button
-          variant="contained"
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/devices/${row.id}/edit`);
-          }}
-        >
-          編集
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/devices/${row.id}/edit`);
+            }}
+          >
+            編集
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeleteTarget(row);
+            }}
+          >
+            削除
+          </Button>
+        </Stack>
       ),
     },
   ];
@@ -73,6 +107,33 @@ export const DeviceList = () => {
         loading={loading}
         error={error || undefined}
       />
+
+      <Dialog
+        open={!!deleteTarget}
+        title="機器の削除"
+        confirmText="削除"
+        confirmVariant="danger"
+        loading={deleteLoading}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      >
+        <Typography>
+          {deleteTarget?.name}を削除してもよろしいですか？
+          <br />
+          この操作は取り消せません。
+        </Typography>
+      </Dialog>
+
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSuccessMessage(null)} severity="success">
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }; 
