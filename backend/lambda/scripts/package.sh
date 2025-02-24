@@ -20,7 +20,7 @@ source venv/bin/activate
 echo "依存パッケージをインストールしています..."
 pip install -r requirements.txt --target "$PACKAGE_DIR/python"
 
-# パッケージの不要なファイルを削除（先に削除）
+# パッケージの不要なファイルを削除
 echo "パッケージの不要なファイルを削除しています..."
 find "$PACKAGE_DIR" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 find "$PACKAGE_DIR" -type f -name "*.pyc" -delete
@@ -30,6 +30,18 @@ find "$PACKAGE_DIR" -type d -name "*.dist-info" -exec rm -rf {} + 2>/dev/null ||
 find "$PACKAGE_DIR" -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 find "$PACKAGE_DIR" -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true
 find "$PACKAGE_DIR" -type d -name "test" -exec rm -rf {} + 2>/dev/null || true
+
+# 追加の不要なファイルを削除
+echo "追加の不要なファイルを削除しています..."
+rm -rf "$PACKAGE_DIR/python/mysql/vendor/plugin"
+find "$PACKAGE_DIR" -type f -name "*.dll" -delete
+find "$PACKAGE_DIR" -type f -name "*.exe" -delete
+find "$PACKAGE_DIR" -type f -name "*.h" -delete
+find "$PACKAGE_DIR" -type f -name "*.a" -delete
+find "$PACKAGE_DIR" -type f -name "*.lib" -delete
+find "$PACKAGE_DIR" -type f -name "*.pdf" -delete
+find "$PACKAGE_DIR" -type f -name "*.html" -delete
+find "$PACKAGE_DIR" -type f -name "*.md" -delete
 
 # ソースコードのコピー
 echo "ソースコードをコピーしています..."
@@ -43,20 +55,19 @@ find "$PACKAGE_DIR" -type f -name "*.pyc" -delete
 find "$PACKAGE_DIR" -type f -name "*.pyo" -delete
 find "$PACKAGE_DIR" -type f -name "*.pyd" -delete
 
-# 一時ディレクトリを作成してファイルをコピー（パス区切り文字を修正するため）
+# 一時ディレクトリを作成してファイルをコピー
 echo "ファイル構造を正規化しています..."
 TMP_DIR="$PACKAGE_DIR/tmp"
 mkdir -p "$TMP_DIR"
 cd "$PACKAGE_DIR/python"
 find . -type f -print0 | while IFS= read -r -d '' file; do
-    # パス区切り文字をスラッシュに変換
     normalized_path=$(echo "$file" | sed 's|\\|/|g')
     dir=$(dirname "$normalized_path")
     mkdir -p "$TMP_DIR/$dir"
     cp "$file" "$TMP_DIR/$normalized_path"
 done
 
-# 再度不要なファイルを削除（念のため）
+# 再度不要なファイルを削除
 echo "最終クリーンアップを実行しています..."
 find "$TMP_DIR" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 find "$TMP_DIR" -type f -name "*.pyc" -delete
@@ -65,10 +76,10 @@ find "$TMP_DIR" -type f -name "*.pyd" -delete
 find "$TMP_DIR" -type d -name "*.dist-info" -exec rm -rf {} + 2>/dev/null || true
 find "$TMP_DIR" -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 
-# ZIPファイルの作成（Unixスタイルのパス区切り文字を使用）
+# ZIPファイルの作成
 echo "ZIPファイルを作成しています..."
 cd "$TMP_DIR"
-find . -type f -print0 | LC_ALL=C sort -z | xargs -0 zip -X "$BASE_DIR/function.zip"
+find . -type f -print0 | LC_ALL=C sort -z | xargs -0 zip -X -9 "$BASE_DIR/function.zip"
 
 # クリーンアップ
 cd "$BASE_DIR"
