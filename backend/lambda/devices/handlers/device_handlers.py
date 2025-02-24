@@ -1,7 +1,8 @@
 import json
+import re
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from ..database import get_db
 from ..models import Device
 from ..schemas import DeviceCreate, Device as DeviceSchema
@@ -41,6 +42,31 @@ def validate_uuid(device_id: str) -> bool:
     except ValueError:
         return False
 
+def validate_device_input(db: Session, device: DeviceCreate, device_id: Optional[str] = None):
+    """デバイス入力の検証"""
+    # 重複チェック
+    query = db.query(Device).filter(
+        Device.name == device.name,
+        Device.manufacturer == device.manufacturer
+    )
+    if device_id:  # 更新時は自身を除外
+        query = query.filter(Device.id != device_id)
+    
+    existing_device = query.first()
+    if existing_device:
+        raise ValidationError(
+            f"この機器（機器名：{device.name}、メーカー：{device.manufacturer}）は既に登録されています",
+            {"field": "duplicate"}
+        )
+
+    # 文字種チェック - より広い文字種を許可
+    pattern = r'^[a-zA-Z0-9ぁ-んァ-ンー一-龥\s\-_.,&!@#()（）［］・、。]+$'
+    if not re.match(pattern, device.name) or not re.match(pattern, device.manufacturer):
+        raise ValidationError(
+            "使用できない文字が含まれています。使用可能な文字：日本語、英数字、記号（. , & ! @ # ( ) （ ） ［ ］ ・ 、 。 - _）",
+            {"field": "format"}
+        )
+
 @router.post("/devices/", response_model=DeviceSchema, status_code=201)
 def create_device(device: DeviceCreate, db: Session = Depends(get_db)):
     """新しいデバイスを作成"""
@@ -50,6 +76,9 @@ def create_device(device: DeviceCreate, db: Session = Depends(get_db)):
             raise ValidationError("デバイス名は必須です", {"field": "name"})
         if not device.manufacturer:
             raise ValidationError("メーカー名は必須です", {"field": "manufacturer"})
+
+        # 重複と文字種のバリデーション
+        validate_device_input(db, device)
 
         db_device = Device(
             id=str(uuid.uuid4()),
@@ -178,6 +207,9 @@ def update_device(device_id: str, device: DeviceCreate, db: Session = Depends(ge
             raise ValidationError("デバイス名は必須です", {"field": "name"})
         if not device.manufacturer:
             raise ValidationError("メーカー名は必須です", {"field": "manufacturer"})
+
+        # 重複と文字種のバリデーション
+        validate_device_input(db, device, device_id)
 
         db_device = db.query(Device).filter(Device.id == device_id).first()
         if db_device is None:

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Typography, Stack, Alert, Snackbar } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TextField } from '../../components/common/TextField';
 import { Button } from '../../components/common/Button';
-import { DeviceCreate } from '../../types/device';
+import { Device, DeviceCreate } from '../../types/device';
 import apiClient from '../../api/client';
+import { Dialog } from '../../components/common/Dialog';
 
 export const DeviceForm = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export const DeviceForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [formData, setFormData] = useState<DeviceCreate>({
     name: '',
     manufacturer: '',
@@ -20,6 +22,36 @@ export const DeviceForm = () => {
     name: false,
     manufacturer: false,
   });
+
+  useEffect(() => {
+    const fetchDevice = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const response = await apiClient.get(`/api/v1/devices/${id}`);
+        const device: Device = response.data;
+        setFormData({
+          name: device.name,
+          manufacturer: device.manufacturer,
+        });
+      } catch (err: any) {
+        console.error('Error fetching device:', err);
+        if (err.response?.data?.error?.message) {
+          setError(err.response.data.error.message);
+        } else {
+          setError('デバイスの取得に失敗しました');
+        }
+        navigate('/devices');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDevice();
+  }, [id, navigate]);
 
   const handleChange = (field: keyof DeviceCreate) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -43,6 +75,14 @@ export const DeviceForm = () => {
     if (!formData.manufacturer) {
       errors.manufacturer = 'メーカー名は必須です';
     }
+
+    const pattern = /^[a-zA-Z0-9ぁ-んァ-ンー一-龥\s\-_.,&!@#()（）［］・、。]+$/;
+    if (formData.name && !pattern.test(formData.name)) {
+      errors.name = '使用できない文字が含まれています。使用可能な文字：日本語、英数字、記号（. , & ! @ # ( ) （ ） ［ ］ ・ 、 。 - _）';
+    }
+    if (formData.manufacturer && !pattern.test(formData.manufacturer)) {
+      errors.manufacturer = '使用できない文字が含まれています。使用可能な文字：日本語、英数字、記号（. , & ! @ # ( ) （ ） ［ ］ ・ 、 。 - _）';
+    }
     
     return errors;
   };
@@ -50,7 +90,6 @@ export const DeviceForm = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
-    // 全てのフィールドをタッチ済みにする
     setTouched({
       name: true,
       manufacturer: true,
@@ -65,16 +104,41 @@ export const DeviceForm = () => {
     setError(null);
 
     try {
-      await apiClient.post('/api/v1/devices/', formData);
-      setSuccessMessage('機器を登録しました');
+      if (id) {
+        await apiClient.put(`/api/v1/devices/${id}`, formData);
+        setSuccessMessage('機器を更新しました');
+      } else {
+        await apiClient.post('/api/v1/devices/', formData);
+        setSuccessMessage('機器を登録しました');
+      }
       setTimeout(() => {
         navigate('/devices');
       }, 2000);
-    } catch (err) {
-      console.error('Error creating device:', err);
-      setError('機器の登録に失敗しました');
+    } catch (err: any) {
+      console.error('Error saving device:', err);
+      if (err.response?.data?.error?.message) {
+        setError(err.response.data.error.message);
+        
+        if (err.response.data.error.details?.field === 'duplicate') {
+          setTouched({
+            name: true,
+            manufacturer: true,
+          });
+        }
+      } else {
+        setError(id ? '機器の更新に失敗しました' : '機器の登録に失敗しました');
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    const isFormDirty = touched.name || touched.manufacturer;
+    if (isFormDirty) {
+      setShowCancelDialog(true);
+    } else {
+      navigate('/devices');
     }
   };
 
@@ -84,7 +148,7 @@ export const DeviceForm = () => {
     <Box component="form" onSubmit={handleSubmit}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" gutterBottom>
-          機器登録
+          {id ? '機器編集' : '機器登録'}
         </Typography>
       </Box>
 
@@ -112,7 +176,7 @@ export const DeviceForm = () => {
         <Box display="flex" gap={2}>
           <Button
             variant="text"
-            onClick={() => navigate('/devices')}
+            onClick={handleCancel}
             disabled={loading}
           >
             キャンセル
@@ -122,10 +186,25 @@ export const DeviceForm = () => {
             loading={loading}
             disabled={loading || Object.keys(errors).length > 0}
           >
-            登録
+            {id ? '更新' : '登録'}
           </Button>
         </Box>
       </Stack>
+
+      <Dialog
+        open={showCancelDialog}
+        title="確認"
+        confirmText="はい"
+        cancelText="いいえ"
+        onConfirm={() => navigate('/devices')}
+        onCancel={() => setShowCancelDialog(false)}
+      >
+        <Typography>
+          変更内容が保存されていません。
+          <br />
+          一覧画面に戻りますか？
+        </Typography>
+      </Dialog>
 
       <Snackbar
         open={!!successMessage}
