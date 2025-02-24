@@ -14,14 +14,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 class UnicodeJSONResponse(JSONResponse):
+    media_type = "application/json; charset=utf-8"
+
     def render(self, content) -> bytes:
         return json.dumps(
             content,
-            ensure_ascii=False,
+            ensure_ascii=False,  # 日本語文字化け防止
             allow_nan=False,
             indent=2,
             separators=(",", ": ")
         ).encode("utf-8")
+
+    def init_headers(self, headers: dict = None) -> dict:
+        headers = headers or {}
+        headers = dict(headers)  # ヘッダーのコピーを作成
+        headers["Content-Type"] = "application/json; charset=utf-8"
+        return super().init_headers(headers)
 
 router = APIRouter()
 

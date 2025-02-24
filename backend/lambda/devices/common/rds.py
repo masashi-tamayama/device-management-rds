@@ -25,7 +25,10 @@ class RDSInterface(DatabaseInterface):
                 user=os.getenv('DB_USER'),
                 password=os.getenv('DB_PASSWORD'),
                 database=os.getenv('DB_NAME'),
-                port=int(os.getenv('DB_PORT', '3306'))
+                port=int(os.getenv('DB_PORT', '3306')),
+                charset='utf8mb4',
+                collation='utf8mb4_unicode_ci',
+                use_unicode=True
             )
             self.connection.autocommit = True
             logger.info(f"RDSデータベース {os.getenv('DB_NAME')} に接続しました")
