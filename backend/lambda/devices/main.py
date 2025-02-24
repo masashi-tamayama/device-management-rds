@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from .handlers import device_handlers
@@ -7,16 +7,25 @@ from fastapi.encoders import jsonable_encoder
 import json
 from .common.exceptions import DeviceManagementError
 from .common.error_handlers import device_management_exception_handler, general_exception_handler
+from sqlalchemy import text
+from .database import get_db
 
 class UnicodeJSONResponse(JSONResponse):
+    media_type = "application/json; charset=utf-8"
+
     def render(self, content) -> bytes:
         return json.dumps(
             content,
             ensure_ascii=False,
             allow_nan=False,
-            indent=None,
-            separators=(",", ":"),
+            indent=2,
+            separators=(",", ": ")
         ).encode("utf-8")
+
+    def init_headers(self, headers: dict = None) -> dict:
+        headers = super().init_headers(headers)
+        headers["Content-Type"] = "application/json; charset=utf-8"
+        return headers
 
 app = FastAPI(
     title="Device Management API",
@@ -45,6 +54,24 @@ app.include_router(device_handlers.router, prefix="/api/v1")
 @app.get("/")
 async def root():
     return {"message": "Device Management API"}
+
+@app.get("/health")
+async def health_check():
+    """ヘルスチェックエンドポイント"""
+    try:
+        # データベース接続テスト
+        db = next(get_db())
+        db.execute(text("SELECT 1"))
+        db.close()
+        return {
+            "status": "healthy",
+            "database": "connected"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Health check failed: {str(e)}"
+        )
 
 # AWS Lambda用ハンドラー
 handler = Mangum(app) 
