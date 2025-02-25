@@ -1,6 +1,7 @@
 import json
 import re
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database import get_db
@@ -10,6 +11,7 @@ from fastapi.responses import JSONResponse
 import uuid
 from ..common.exceptions import DeviceNotFoundError, ValidationError, DatabaseError
 import logging
+from mangum import Mangum
 
 # ロガーの設定
 logger = logging.getLogger(__name__)
@@ -31,6 +33,22 @@ class UnicodeJSONResponse(JSONResponse):
         headers = dict(headers)  # ヘッダーのコピーを作成
         headers["Content-Type"] = "application/json; charset=utf-8"
         return super().init_headers(headers)
+
+app = FastAPI(
+    title="Device Management API",
+    description="Device management system API",
+    version="1.0.0",
+    root_path="/dev"
+)
+
+# CORSミドルウェアの設定
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 本番環境では適切なオリジンに制限すること
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 router = APIRouter()
 
@@ -347,4 +365,9 @@ def delete_device(device_id: str, db: Session = Depends(get_db)):
                 }
             },
             status_code=500
-        ) 
+        )
+
+app.include_router(router)
+
+# Mangumハンドラーの設定
+handler = Mangum(app, api_gateway_base_path="/dev") 
