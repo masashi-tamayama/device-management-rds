@@ -1,0 +1,15 @@
+{
+    "s3": {
+        "bucket": "device-management-frontend-rds",
+        "region": "ap-northeast-1"
+    },
+    "cloudfront": {
+        "distributionId": "E2AL7SKZ12BOI",
+        "domain": "dwe4u6ecffp1b.cloudfront.net"
+    },
+    "build": {
+        "outputDir": "dist",
+        "sourcemap": false,
+        "minify": true
+    }
+} 
