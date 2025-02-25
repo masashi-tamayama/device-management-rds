@@ -1,0 +1,17 @@
+{
+    "FunctionName": "device-management-api",
+    "Runtime": "python3.9",
+    "Handler": "devices.handlers.device_handlers.handler",
+    "MemorySize": 256,
+    "Timeout": 30,
+    "Environment": {
+        "Variables": {
+            "STAGE": "production",
+            "LOG_LEVEL": "INFO"
+        }
+    },
+    "Tags": {
+        "Environment": "production",
+        "Project": "device-management"
+    }
+} 
