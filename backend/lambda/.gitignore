@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Distribution / packaging
+*.dist-info/
+include/
+
+# Virtual Environment
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+
+# Local development
+*.env
+.env.local
+.env.*.local
+
+# Lambda deployment packages
+function.zip
+function.zip.backup
+../function.zip
+
+# Dependencies
+mysql/
+fastapi/
+mangum/
+pydantic/
+pydantic_core/
+sqlalchemy/
+starlette/
+typing_extensions.py
+sniffio/
+anyio/
+idna/
+greenlet/
+annotated_types/
+exceptiongroup/ 

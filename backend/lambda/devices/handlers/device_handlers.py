@@ -4,17 +4,36 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from ..database import get_db
-from ..models import Device
-from ..schemas import DeviceCreate, Device as DeviceSchema
+import sys
+import os
+import logging
+import traceback
 from fastapi.responses import JSONResponse
 import uuid
-from ..common.exceptions import DeviceNotFoundError, ValidationError, DatabaseError
-import logging
 from mangum import Mangum
 
 # ロガーの設定
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# 起動時のデバッグ情報を出力
+logger.debug("=== Lambda Function Initialization ===")
+logger.debug(f"Python Version: {sys.version}")
+logger.debug(f"Python Path: {sys.path}")
+logger.debug(f"Current Directory: {os.getcwd()}")
+logger.debug(f"Directory Contents: {os.listdir('.')}")
+logger.debug(f"Environment Variables: {dict(os.environ)}")
+
+try:
+    from ..database import get_db
+    from ..models import Device
+    from ..schemas import DeviceCreate, Device as DeviceSchema
+    from ..common.exceptions import DeviceNotFoundError, ValidationError, DatabaseError
+    logger.debug("Module imports successful")
+except ImportError as e:
+    logger.error(f"Import Error: {str(e)}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
+    raise
 
 class UnicodeJSONResponse(JSONResponse):
     media_type = "application/json; charset=utf-8"

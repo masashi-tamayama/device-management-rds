@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
 from dotenv import load_dotenv
 import logging
+import traceback
 
 # ロガーの設定
 logging.basicConfig(level=logging.DEBUG)
@@ -15,30 +16,37 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # データベース接続情報
-DB_HOST = os.getenv("DB_HOST", "db")  # デフォルト値をdbに変更
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "okitasouji")  # デフォルト値を修正
-DB_NAME = os.getenv("DB_NAME", "lambdadb")
-
-# SQLAlchemy用のデータベースURL
-DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4&collation=utf8mb4_unicode_ci"
+RDS_HOST = os.getenv("RDS_HOST", "db")
+RDS_PORT = os.getenv("RDS_PORT", "3306")
+RDS_USER = os.getenv("RDS_USER", "root")
+RDS_PASSWORD = os.getenv("RDS_PASSWORD", "okitasouji")
+RDS_DATABASE = os.getenv("RDS_DATABASE", "lambdadb")
 
 # 接続情報をログ出力（パスワードは除く）
-logger.debug(f"Database connection info - Host: {DB_HOST}, Port: {DB_PORT}, User: {DB_USER}, Database: {DB_NAME}")
+logger.debug(f"Database connection info - Host: {RDS_HOST}, Port: {RDS_PORT}, User: {RDS_USER}, Database: {RDS_DATABASE}")
 
-# エンジンの作成
-engine = create_engine(
-    DATABASE_URL,
-    pool_recycle=3600,
-    pool_pre_ping=True,
-    echo=True,  # SQLの実行をログ出力
-    connect_args={
-        "charset": "utf8mb4",
-        "use_unicode": True,
-        "collation": "utf8mb4_unicode_ci"
-    }
-)
+# SQLAlchemy用のデータベースURL
+DATABASE_URL = f"mysql+mysqlconnector://{RDS_USER}:{RDS_PASSWORD}@{RDS_HOST}:{RDS_PORT}/{RDS_DATABASE}?charset=utf8mb4&collation=utf8mb4_unicode_ci"
+
+try:
+    # エンジンの作成
+    logger.debug("Creating database engine...")
+    engine = create_engine(
+        DATABASE_URL,
+        pool_recycle=3600,
+        pool_pre_ping=True,
+        echo=True,
+        connect_args={
+            "charset": "utf8mb4",
+            "use_unicode": True,
+            "collation": "utf8mb4_unicode_ci"
+        }
+    )
+    logger.debug("Database engine created successfully")
+except Exception as e:
+    logger.error(f"Error creating database engine: {str(e)}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
+    raise
 
 # セッションの作成
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -56,9 +64,29 @@ def get_db():
         logger.debug("Database connection successful")
         yield db
     except SQLAlchemyError as e:
-        logger.error(f"データベース接続エラー: {str(e)}")
+        logger.error(f"Database connection error: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         db.close()
-        raise HTTPException(status_code=500, detail=f"データベース接続エラーが発生しました: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "message": "データベース接続エラーが発生しました",
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            }
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        db.close()
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "message": "予期せぬエラーが発生しました",
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            }
+        )
     finally:
         logger.debug("Closing database connection")
         db.close()
