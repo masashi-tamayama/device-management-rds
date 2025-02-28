@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Distribution / packaging
+*.dist-info/
+include/
+
+# Virtual Environment
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+
+# Local development
+*.env
+.env.local
+.env.*.local
+
+# Lambda deployment packages
+function.zip
+function.zip.backup
+../function.zip
+lambda_function.zip
+
+# Deployment related files
+scripts/deploy.py
+scripts/deploy.sh
+scripts/package.py
+scripts/package.sh
+scripts/create_deploy_package.py
+deploy-config.json
+test_import.py
+lambda_function.py
+
+# Dependencies
+mysql/
+fastapi/
+mangum/
+pydantic/
+pydantic_core/
+sqlalchemy/
+starlette/
+typing_extensions.py
+sniffio/
+anyio/
+idna/
+greenlet/
+annotated_types/
+exceptiongroup/
+bin/
+click/
+dns/
+dotenv/
+email_validator/
+h11/
+multipart/
+pydantic_settings/
+python_multipart/
+uvicorn/ 

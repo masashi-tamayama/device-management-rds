@@ -7,8 +7,22 @@
     "Environment": {
         "Variables": {
             "STAGE": "production",
-            "LOG_LEVEL": "INFO"
+            "LOG_LEVEL": "DEBUG",
+            "RDS_HOST": "device-management-db.c5gq8qo6cito.ap-northeast-1.rds.amazonaws.com",
+            "RDS_PORT": "3306",
+            "RDS_USER": "dbuser",
+            "RDS_PASSWORD": "dbpassword123",
+            "RDS_DATABASE": "lambdadb",
+            "DB_POOL_SIZE": "5"
         }
+    },
+    "VpcConfig": {
+        "SubnetIds": [
+            "subnet-018f24b6f9348e7f1",
+            "subnet-0613b7045d7f9d58c",
+            "subnet-00ec4b7544ff8df34"
+        ],
+        "SecurityGroupIds": ["sg-0b097890e4f074e93"]
     },
     "Tags": {
         "Environment": "production",

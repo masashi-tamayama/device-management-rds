@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Device, DeviceCreateInput, DeviceUpdateInput } from '../../types/device';
+import { Device, DeviceCreate, DeviceUpdateInput } from '../../types/device';
 import { deviceApi } from '../../api/deviceApi';
 
 export const DeviceForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [formData, setFormData] = useState<DeviceCreateInput>({
+    const [formData, setFormData] = useState<DeviceCreate>({
         name: '',
         manufacturer: ''
     });
@@ -16,10 +16,10 @@ export const DeviceForm: React.FC = () => {
             if (id) {
                 try {
                     const device = await deviceApi.getDevice(id);
-                    setFormData({
+                    setFormData((prev: DeviceCreate) => ({
                         name: device.name,
                         manufacturer: device.manufacturer
-                    });
+                    }));
                 } catch (error) {
                     console.error('デバイスの取得に失敗しました:', error);
                     navigate('/devices');

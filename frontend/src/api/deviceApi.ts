@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Device, DeviceCreateInput, DeviceUpdateInput } from '../types/device';
+import { Device, DeviceCreate, DeviceUpdateInput } from '../types/device';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 const API_PATH = '/api/v1/devices';
@@ -18,7 +18,7 @@ export const deviceApi = {
     },
 
     // デバイスの作成
-    createDevice: async (device: DeviceCreateInput): Promise<Device> => {
+    createDevice: async (device: DeviceCreate): Promise<Device> => {
         const response = await axios.post(`${API_BASE_URL}${API_PATH}/`, device);
         return response.data;
     },
