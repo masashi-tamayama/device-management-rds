@@ -8,11 +8,11 @@ load_dotenv()
 
 # データベース接続情報
 config = {
-    'host': os.getenv('RDS_HOST'),
-    'user': os.getenv('RDS_USER'),
-    'password': os.getenv('RDS_PASSWORD'),
-    'database': os.getenv('RDS_DATABASE'),
-    'port': os.getenv('RDS_PORT')
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME'),
+    'port': os.getenv('DB_PORT')
 }
 
 print("接続情報:")

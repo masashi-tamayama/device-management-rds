@@ -5,6 +5,7 @@ import sys
 import logging
 import traceback
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -84,13 +85,19 @@ app = FastAPI(
 # CORSミドルウェアの設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://dwe4u6ecffp1b.cloudfront.net"],  # CloudFrontドメインに制限
+    allow_origins=[
+        "https://dwe4u6ecffp1b.cloudfront.net",
+        "http://localhost:3000",  # ローカル開発環境用
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Api-Key"],
 )
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api/v1",
+    tags=["devices"]
+)
 
 def validate_uuid(device_id: str) -> bool:
     """UUIDの形式が有効かチェックする"""

@@ -13,19 +13,27 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # 環境変数の読み込み
-env_file = '.env.development'  # 開発環境設定を強制的に使用
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+env_file = f".env.{ENVIRONMENT}"
 load_dotenv(env_file)
-logger.info(f"Loading environment settings from: {env_file}")
+logger.debug(f"Loading environment from: {env_file}")
 
 # データベース接続情報
-DB_HOST = os.getenv("DB_HOST", "172.24.160.1")
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "okitasouji")
-DB_NAME = os.getenv("DB_NAME", "lambdadb")
+if ENVIRONMENT == "production":
+    DB_HOST = os.getenv("RDS_HOST")
+    DB_PORT = os.getenv("RDS_PORT", "3306")
+    DB_USER = os.getenv("RDS_USER")
+    DB_PASSWORD = os.getenv("RDS_PASSWORD")
+    DB_NAME = os.getenv("RDS_DATABASE")
+else:
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "3306")
+    DB_USER = os.getenv("DB_USER", "root")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    DB_NAME = os.getenv("DB_NAME", "lambdadb")
 
 # 接続情報をログ出力（パスワードは除く）
-logger.info("Using development database")
+logger.debug(f"Environment: {ENVIRONMENT}")
 logger.debug(f"Database connection info - Host: {DB_HOST}, Port: {DB_PORT}, User: {DB_USER}, Database: {DB_NAME}")
 
 # SQLAlchemy用のデータベースURL
