@@ -1,14 +1,13 @@
 import json
 import re
+import os
+import sys
+import logging
+import traceback
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
-import sys
-import os
-import logging
-import traceback
-from fastapi.responses import JSONResponse
 import uuid
 from mangum import Mangum
 
@@ -22,13 +21,35 @@ logger.debug(f"Python Version: {sys.version}")
 logger.debug(f"Python Path: {sys.path}")
 logger.debug(f"Current Directory: {os.getcwd()}")
 logger.debug(f"Directory Contents: {os.listdir('.')}")
-logger.debug(f"Environment Variables: {dict(os.environ)}")
+
+# プロジェクトルートの絶対パスを取得
+LAMBDA_TASK_ROOT = os.environ.get('LAMBDA_TASK_ROOT', '')
+if not LAMBDA_TASK_ROOT:
+    LAMBDA_TASK_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# パッケージのルートディレクトリを特定
+PACKAGE_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if os.path.exists(os.path.join(PACKAGE_ROOT, 'devices')):
+    PACKAGE_ROOT = os.path.dirname(PACKAGE_ROOT)
+
+# 必要なパスをsys.pathに追加
+paths = [
+    LAMBDA_TASK_ROOT,
+    os.path.dirname(LAMBDA_TASK_ROOT),
+    PACKAGE_ROOT,
+    os.getcwd()
+]
+
+for path in paths:
+    if path and path not in sys.path:
+        sys.path.insert(0, path)
+        logger.debug(f"Added to sys.path: {path}")
 
 try:
-    from ..database import get_db
-    from ..models import Device
-    from ..schemas import DeviceCreate, Device as DeviceSchema
-    from ..common.exceptions import DeviceNotFoundError, ValidationError, DatabaseError
+    from devices.database import get_db
+    from devices.models import Device
+    from devices.schemas import DeviceCreate, Device as DeviceSchema
+    from devices.common.exceptions import DeviceNotFoundError, ValidationError, DatabaseError
     logger.debug("Module imports successful")
 except ImportError as e:
     logger.error(f"Import Error: {str(e)}")

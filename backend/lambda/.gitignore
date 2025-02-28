@@ -42,6 +42,17 @@ ENV/
 function.zip
 function.zip.backup
 ../function.zip
+lambda_function.zip
+
+# Deployment related files
+scripts/deploy.py
+scripts/deploy.sh
+scripts/package.py
+scripts/package.sh
+scripts/create_deploy_package.py
+deploy-config.json
+test_import.py
+lambda_function.py
 
 # Dependencies
 mysql/
@@ -57,4 +68,14 @@ anyio/
 idna/
 greenlet/
 annotated_types/
-exceptiongroup/ 
+exceptiongroup/
+bin/
+click/
+dns/
+dotenv/
+email_validator/
+h11/
+multipart/
+pydantic_settings/
+python_multipart/
+uvicorn/ 
